@@ -9,28 +9,25 @@ use Tests\TestCase;
 class ApiTest extends TestCase
 {
     /**
-     * @test getAllUsers
+     * @test get list of all Users
      */
-    public function getAllUsers()
+    public function get_all_users()
     {
-        $response = $this->get('api/users');
-
+        $response = $this->get(route('users'));
+        
         $response->assertStatus(200);
     }
-
-    public function getUsersActives()
-    {
-
-        $response = $this->get('api/users?active=1');
-
+    /**
+     * @test store a new User
+     *
+     * @return void
+     */
+    public function store_new_user(){
+        $response = $this->post(route('newUser'));
+        
         $response->assertStatus(200);
 
+        $response->assertSeeText(['message']);
     }
 
-    public function successUserLogin()
-    {
-        $response = $this->get('api/login');
-
-        $response->assertStatus(200);
-    }
 }

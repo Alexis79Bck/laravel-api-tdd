@@ -25,6 +25,25 @@ class ApiController extends Controller
 
     }
 
+    public function store(Request $request) {
+        
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => $request->password,
+            'confirmed_password' => $request->confirmed_password,
+        ]);
+        
+        $response =[
+            'userId' => $user->id,
+            'name' => $user->name,
+            'message' => 'The new user have been registered.'
+        ];
+        return response()->json($response);
+    }
+
+
+
     public function login(Request $request) {
         $response = [
             'status' => 0,

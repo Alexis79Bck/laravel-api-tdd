@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\API\BlogController;
+use App\Http\Controllers\API\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,3 +19,12 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+/**
+ * Routes for UserController
+ */
+Route::get('users', [UserController::class,'index']);
+Route::post('new-user', [UserController::class,'store']);
+Route::get('user/{id}', [UserController::class,'show']);
+
+
+Route::get('blogs', [BlogController::class,'index']);

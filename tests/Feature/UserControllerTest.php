@@ -24,13 +24,13 @@ class UserControllerTest extends TestCase
     {
         $user1 = $this->get('/api/user/1');
         $user2 = $this->get('/api/user/2');
-        $user3 = $this->get('/api/user/8');
+        $user3 = $this->get('/api/user/4');
         $user4 = $this->get('/api/user/12');
 
         $user1->assertStatus(200);
         $user2->assertStatus(200);
         $user3->assertStatus(200);
-        $user4->assertStatus(200);
+        $user4->assertStatus(404);
     }
     /**
      * Register a new user

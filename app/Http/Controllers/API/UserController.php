@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-   
+
     /**
      * Display a listing of the resource.
      *
@@ -20,7 +20,7 @@ class UserController extends Controller
     {
         $users = User::all();
         $data = UserResource::collection($users);
-        return response()->json($data);
+        return response()->json($data, 200);
     }
 
     /**
@@ -31,19 +31,28 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        
+        $validated = $request->validate([
+
+            'name' => 'required|string|max:50',
+            'email' => 'required|email|string|max:50|unique:users',
+            'password' => 'required|string|min:8'
+        ]);
+
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-        ]);            
-        
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']),
+            'active' => true
+        ]);
+
         $userToken = $user->createToken('auth_token')->plainTextToken;
-       
+
         return response()->json([
+            'message' => 'New User have been registered.',
+            'userInfo'=> $user->only('id','name','email','active'),
             'token_access' => $userToken,
             'token_type' => 'Bearer'
-        ]);
+        ],200);
     }
 
     /**
@@ -54,7 +63,10 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        return new UserResource(User::findOrFail($id));
+        $user =User::findOrFail($id);
+        return response()->json([
+            'userInfo'=>  new UserResource($user)
+        ], 200);
     }
 
     /**
@@ -66,7 +78,14 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        
+        $user = User::findOrFail($id);
+        $oldUser = $user;
+        $user->fill($request->toArray())->save();
+
+        return response()->json([
+            'oldUserInfo' => new UserResource($oldUser),
+            'newUserInfo'=> new UserResource($user)
+        ], 200);
     }
 
     /**
@@ -77,23 +96,47 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $user = User::findOrFail($id);
+        $name = $user->name;
+        $user->delete();
+
+        return response()->json([
+            'message' => 'The user record have been deleted successfully.',
+            'name' => $name,
+        ]);
     }
 
     public function userLogin(Request $request)
     {
-        if (!Auth::attempt($request->only('email','password'))) {
-            return response()->json([
-                'message' => 'Invalid email or password, try again.'
-            ], 401);            
+
+        return response()->json($this->attemptLogin($request));
+
+    }
+
+    public function userProfile(Request $request)
+    {
+        
+        return $request->user();
+    }
+
+    private function attemptLogin($request)
+    {
+        if (Auth::attempt($request->only('email','password'))) {
+            $user = User::where('email','=', $request->email)->firstOrFail();
+            $userToken = $user->createToken('auth_token')->plainTextToken;
+            return [
+                'message' => 'Login successfully.',
+                'status'=>'Granted',
+                'userInfo'=> $user->only('id','name','email'),
+                'token_access' => $userToken,
+                'token_type' => 'Bearer'
+                ];
+        }else{
+            return [
+                'message' => 'Invalid email or password, try again.',
+                'status'=>'Denied'
+                ];
         }
 
-        $user = User::where('email','=', $request->email)->firstOrFail();
-        $userToken = $user->createToken('auth_token')->plainTextToken;
-       
-        return response()->json([
-            'token_access' => $userToken,
-            'token_type' => 'Bearer'
-        ]);
     }
 }

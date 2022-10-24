@@ -6,17 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Resources\UserResource;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    public function __invoke(Request $request)
-    {
-        //$user = User::first();
-        //return new UserResource($user);
-        
-       
-        
-    }
+   
     /**
      * Display a listing of the resource.
      *
@@ -38,19 +32,11 @@ class UserController extends Controller
     public function store(Request $request)
     {
         
-        // $validate = $request->validate([
-        //     'name' => 'required|string',
-        //     'email' => 'required|string|unique:users',
-        //     'pasword' => 'required|string|min:8'
-        // ]);
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
-        ]);
-            // 'name' => $validate['name'],
-            // 'email' => $validate['email'],
-            // 'password' => bcrypt($validate['password']),
+        ]);            
         
         $userToken = $user->createToken('auth_token')->plainTextToken;
        
@@ -80,7 +66,7 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        
     }
 
     /**
@@ -92,5 +78,22 @@ class UserController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function userLogin(Request $request)
+    {
+        if (!Auth::attempt($request->only('email','password'))) {
+            return response()->json([
+                'message' => 'Invalid email or password, try again.'
+            ], 401);            
+        }
+
+        $user = User::where('email','=', $request->email)->firstOrFail();
+        $userToken = $user->createToken('auth_token')->plainTextToken;
+       
+        return response()->json([
+            'token_access' => $userToken,
+            'token_type' => 'Bearer'
+        ]);
     }
 }

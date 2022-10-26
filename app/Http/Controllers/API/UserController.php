@@ -59,11 +59,21 @@ class UserController extends Controller
     }
     public function profile()
     {
-       //
+        return response()->json([
+            "code_response" => 200,
+            "status" => 1,
+            "data" => auth()->user()
+            ]);
     }
     public function logout()
     {
-        //
+        auth()->user()->tokens()->delete();
+
+        return response()->json([
+            "code_response" => 200,
+            "status" => 1,
+            "msg" => "Ha cerrado sesión exitosamente."
+            ]);
     }
     /**
      * Validates the data submitted in the type of request that sends it.

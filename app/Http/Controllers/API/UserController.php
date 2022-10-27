@@ -17,19 +17,22 @@ class UserController extends Controller
      */
     public function register(Request $request)
     {
-       $validate = $this->validateData($request,'register');
+        $validate = $this->validateData($request,'register');
 
-       $user = User::create([
+        $user = User::create([
             'fullname' => $validate['fullname'],
             'email' => $validate['email'],
             'username' => $validate['username'],
             'password' => Hash::make($validate['password'])
-       ]);
+        ]);
+
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             "Status" => 1,
-            "Data" => $user->only('fullname','email','username'),
-            "Msg" => "Registro Exitoso."
+            "Msg" => "Registro Exitoso.",
+            'access_token' => $token,
+            'token_type' => 'Bearer'
             ]);
 
     }
@@ -59,6 +62,7 @@ class UserController extends Controller
     }
     public function profile()
     {
+
         return response()->json([
             "code_response" => 200,
             "status" => 1,
@@ -67,8 +71,8 @@ class UserController extends Controller
     }
     public function logout()
     {
-        auth()->user()->tokens()->delete();
-
+        //auth()->user()->tokens()->delete();
+        auth()->user()->currentAccessToken()->delete();
         return response()->json([
             "code_response" => 200,
             "status" => 1,

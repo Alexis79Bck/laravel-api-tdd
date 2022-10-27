@@ -27,7 +27,6 @@ class UserControllerTest extends TestCase
             'password_confirmation' => 'pass123456'
         ];
 
-        print_r($data);
         $response = $this->post('/api/register',$data);
 
         $response->assertStatus(200);
@@ -46,9 +45,6 @@ class UserControllerTest extends TestCase
 
         $response = $this->post('/api/login',$data);
 
-        print_r($data);
-        print_r($response->content());
-
         $response->assertStatus(200);
 
     }
@@ -58,7 +54,7 @@ class UserControllerTest extends TestCase
      */
     public function test_show_auth_user_profile()
     {
-
+        
         $response = $this->get('/api/user/profile' );
 
         $response->assertStatus(200);
